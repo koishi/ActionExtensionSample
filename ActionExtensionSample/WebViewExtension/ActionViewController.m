@@ -41,7 +41,17 @@
             }
 
             NSURL *url = (NSURL *)item;
-            NSURL *newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"http://b.hatena.ne.jp/entry/s/%@%@", [url host], [url path]]];
+//            NSURL *newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"http://b.hatena.ne.jp/entry/s/%@%@", [url host], [url path]]];
+
+            NSString *escapedString = (NSString *)CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(
+                                                                                                            NULL,
+                                                                                                            (CFStringRef)url.absoluteString, // ← 元のテキスト
+                                                                                                            NULL,
+                                                                                                            CFSTR("!*'();:@&=+$,/?%#[]"),
+                                                                                                            kCFStringEncodingUTF8));
+
+            NSURL *newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"https://megalodon.jp/?url=%@", escapedString]];
+
             [weakSelf.webView loadRequest:[NSURLRequest requestWithURL:newUrl]];
         }];
     } else {
