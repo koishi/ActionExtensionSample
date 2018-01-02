@@ -39,10 +39,10 @@
                 [weakSelf.extensionContext cancelRequestWithError:unexpectedError];
                 return;
             }
-            
+
             NSURL *url = (NSURL *)item;
-            
-            [weakSelf.webView loadRequest:[NSURLRequest requestWithURL:url]];
+            NSURL *newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"http://b.hatena.ne.jp/entry/s/%@%@", [url host], [url path]]];
+            [weakSelf.webView loadRequest:[NSURLRequest requestWithURL:newUrl]];
         }];
     } else {
         NSError *unavailableError = [NSError errorWithDomain:NSItemProviderErrorDomain
