@@ -8,13 +8,14 @@
 
 #import "ActionViewController.h"
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <SafariServices/SafariServices.h>
 
 @interface ActionViewController () <UIWebViewDelegate>
 
 @property BOOL displayHatena;
 @property NSURL *url;
 
-@property (weak, nonatomic) IBOutlet UIWebView *webView;
+//@property (weak, nonatomic) IBOutlet WKWebView *webView;
 
 @end
 
@@ -58,7 +59,7 @@
 - (void)reloadWebView {
     NSURL *newUrl;
     if (self.displayHatena) {
-        newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"http://b.hatena.ne.jp/entry/s/%@%@", [self.url host], [self.url path]]];
+        newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"http://b.hatena.ne.jp/entry/%@%@", [self.url host], [self.url path]]];
     } else {
         NSString *escapedString = (NSString *)CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(
                                                                                                         NULL,
@@ -69,7 +70,16 @@
 
         newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"https://megalodon.jp/?url=%@", escapedString]];
     }
-    [self.webView loadRequest:[NSURLRequest requestWithURL:newUrl]];
+    NSLog(@"%@", newUrl.absoluteString);
+//    [self.webView loadRequest:[NSURLRequest requestWithURL:newUrl]];
+
+//    if let url = URL.init(string: calendar.items[indexPath.row].entryURL) {
+//        let safariView = SFSafariViewController(url: url)
+//        self.present(safariView, animated: true, completion: nil)
+//    }
+
+    SFSafariViewController *safariView = [[SFSafariViewController alloc] initWithURL:newUrl];
+    [self presentViewController:safariView animated:true completion:nil];
 }
 
 - (IBAction)done {
