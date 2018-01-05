@@ -11,6 +11,9 @@
 
 @interface ActionViewController () <UIWebViewDelegate>
 
+@property BOOL displayHatena;
+@property NSURL *url;
+
 @property (weak, nonatomic) IBOutlet UIWebView *webView;
 
 @end
@@ -40,19 +43,9 @@
                 return;
             }
 
-            NSURL *url = (NSURL *)item;
-//            NSURL *newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"http://b.hatena.ne.jp/entry/s/%@%@", [url host], [url path]]];
-
-            NSString *escapedString = (NSString *)CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(
-                                                                                                            NULL,
-                                                                                                            (CFStringRef)url.absoluteString, // ← 元のテキスト
-                                                                                                            NULL,
-                                                                                                            CFSTR("!*'();:@&=+$,/?%#[]"),
-                                                                                                            kCFStringEncodingUTF8));
-
-            NSURL *newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"https://megalodon.jp/?url=%@", escapedString]];
-
-            [weakSelf.webView loadRequest:[NSURLRequest requestWithURL:newUrl]];
+            weakSelf.url = (NSURL *)item;
+            weakSelf.displayHatena = true;
+            [weakSelf reloadWebView];
         }];
     } else {
         NSError *unavailableError = [NSError errorWithDomain:NSItemProviderErrorDomain
@@ -60,6 +53,23 @@
                                                     userInfo:nil];
         [self.extensionContext cancelRequestWithError:unavailableError];
     }
+}
+
+- (void)reloadWebView {
+    NSURL *newUrl;
+    if (self.displayHatena) {
+        newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"http://b.hatena.ne.jp/entry/s/%@%@", [self.url host], [self.url path]]];
+    } else {
+        NSString *escapedString = (NSString *)CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(
+                                                                                                        NULL,
+                                                                                                        (CFStringRef)self.url.absoluteString,
+                                                                                                        NULL,
+                                                                                                        CFSTR("!*'();:@&=+$,/?%#[]"),
+                                                                                                        kCFStringEncodingUTF8));
+
+        newUrl = [[NSURL alloc] initWithString: [NSString stringWithFormat: @"https://megalodon.jp/?url=%@", escapedString]];
+    }
+    [self.webView loadRequest:[NSURLRequest requestWithURL:newUrl]];
 }
 
 - (IBAction)done {
@@ -79,6 +89,11 @@
     if (error) {
         NSLog(@"%@", error);
     }
+}
+
+- (IBAction)tappedRefreshButton:(UIBarButtonItem *)sender {
+    self.displayHatena = !self.displayHatena;
+    [self reloadWebView];
 }
 
 @end
